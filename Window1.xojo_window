@@ -199,14 +199,34 @@ End
 		  end if
 		End Function
 	#tag EndEvent
+	#tag Event
+		Function CompareRows(row1 as Integer, row2 as Integer, column as Integer, ByRef result as Integer) As Boolean
+		  dim d1 as double = me.CellTag( row1, column ).DoubleValue
+		  dim d2 as double = me.CellTag( row2, column ).DoubleValue
+		  
+		  if d1 < d2 then
+		    result = -1
+		  elseif d1 > d2 then
+		    result = 1
+		  else
+		    result = 0
+		  end if
+		  
+		  return true
+		  
+		End Function
+	#tag EndEvent
 #tag EndEvents
 #tag Events tmrTest
 	#tag Event
 		Sub Action()
 		  const kFormat as string = "#,0.000"
 		  
+		  dim thisCount as integer = self.ThisCount
+		  
 		  lbResult.AddRow format( ThisCount, "#,0" )
 		  dim row as integer = lbResult.LastIndex
+		  lbResult.CellTag( row, 0 ) = thisCount
 		  
 		  dim swb as new Stopwatch_MTC
 		  dim swd as new Stopwatch_MTC
@@ -215,7 +235,7 @@ End
 		  
 		  dim b as new BinaryDictionary_MTC
 		  
-		  for i as integer = 1 to ThisCount
+		  for i as integer = 1 to thisCount
 		    dim key as variant = Keys( i )
 		    
 		    swd.Start
@@ -245,7 +265,7 @@ End
 		  swd.Reset
 		  swb.Reset
 		  
-		  for i as integer = 1 to ThisCount
+		  for i as integer = 1 to thisCount
 		    dim key as variant = Keys( i )
 		    
 		    swd.Start
@@ -272,15 +292,37 @@ End
 		  lbResult.Cell( row, 4 ) = format( swb.ElapsedMilliseconds, kFormat )
 		  lbResult.CellTag( row, 4 ) = swb.ElapsedMicroseconds
 		  
+		  dim counts() as integer = b.GetDistribution
+		  dim minCount as integer = 2^32
+		  dim maxCount as integer
+		  dim isZeroCount as integer
+		  dim hasValueCount as integer
+		  
+		  for each count as integer in counts
+		    if count > maxCount then
+		      maxCount = count
+		    end if
+		    if count = 0 then
+		      isZeroCount = isZeroCount + 1
+		    else
+		      hasValueCount = hasValueCount + 1
+		      if count < minCount then
+		        minCount = count
+		      end if
+		    end if
+		  next
+		  
+		  counts = counts // A place to break
+		  
 		  if UserCancelled or ThisCount = kUbound then
 		    me.Mode = Timer.ModeOff
 		    return
 		  end if
 		  
-		  ThisCount = ThisCount + ThisCount
+		  self.ThisCount = thisCount + thisCount
 		  
-		  if ThisCount > kUbound then
-		    ThisCount = kUbound
+		  if self.ThisCount > kUbound then
+		    self.ThisCount = kUbound
 		  end if
 		  
 		End Sub

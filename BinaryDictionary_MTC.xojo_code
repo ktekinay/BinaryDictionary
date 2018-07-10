@@ -1,40 +1,46 @@
 #tag Class
 Protected Class BinaryDictionary_MTC
-	#tag Method, Flags = &h21
-		Private Function HashOf(key As Variant) As UInt64
-		  #if not DebugBuild then
-		    #pragma BackgroundTasks false
-		    #pragma BoundsChecking false
-		    #pragma NilObjectChecking false
-		    #pragma StackOverflowChecking false
-		  #endif
+	#tag Method, Flags = &h0
+		Sub Constructor()
+		  FibShifter = 2 ^ ( 64 - SlotUboundExponent )
+		  dim ub as integer = ( 2 ^ SlotUboundExponent ) - 1
+		  RedimArrays( ub )
 		  
-		  const kMult as UInt64 = 2 ^ 32
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function GetDistribution() As Integer()
+		  dim counts() as integer
+		  redim counts( SlotKeys.Ubound )
 		  
-		  dim useType as UInt64 = key.Type
+		  for slotIndex as integer = 0 to SlotKeys.Ubound
+		    dim arr() as variant = SlotKeys( slotIndex )
+		    counts( slotIndex ) = arr.Ubound + 1
+		  next
 		  
-		  dim hash as UInt64 = useType * kMult
-		  dim keyHash as UInt32 = key.Hash
-		  hash = hash or keyHash
-		  
-		  return hash
+		  return counts
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Function HasKey(key As Variant) As Boolean
-		  dim isMatch as boolean
-		  call IndexOf( HashOf( key ), isMatch )
-		  return isMatch
+		  dim slotIndex as integer
+		  dim itemIndex as integer
+		  Locate( key, slotIndex, itemIndex, false )
+		  
+		  return itemIndex <> -1
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function Keys() As Variant()
+		  return SlotsToValues( SlotKeys )
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function IndexOf(keyHash As UInt64, ByRef IsMatch As Boolean) As Integer
-		  //
-		  // If there is no match, will return the index of the next highest value
-		  //
-		  
+		Private Sub Locate(key As Variant, ByRef slotIndex As Integer, ByRef itemIndex As Integer, raiseException As Boolean = True)
 		  #if not DebugBuild then
 		    #pragma BackgroundTasks false
 		    #pragma BoundsChecking false
@@ -42,42 +48,89 @@ Protected Class BinaryDictionary_MTC
 		    #pragma StackOverflowChecking false
 		  #endif
 		  
-		  dim lowerbound as integer = 0
-		  dim upperbound as integer = KeyHashes.Ubound
+		  const kFibMult as UInt64 = 11400714819323198485
 		  
-		  dim result as integer = upperbound + 1 // Next highest
+		  dim hash as UInt64 = key.Hash
+		  slotIndex = ( hash * kFibMult ) \ FibShifter
 		  
-		  do until lowerbound > upperbound
-		    dim targetIndex as integer = ( ( upperbound - lowerbound ) \ 2 ) + lowerbound
-		    dim targetHash as UInt64 = KeyHashes( targetIndex )
-		    
-		    if keyHash = targetHash then
-		      isMatch = true
-		      return targetIndex
-		      
-		    elseif keyHash < targetHash then
-		      result = targetIndex
-		      upperbound = targetIndex - 1
-		      
-		    else
-		      lowerbound = targetIndex + 1
-		      
-		    end if
-		  loop
+		  //
+		  // We have a good slot, let's check the items
+		  //
+		  dim arrKeys() as variant = SlotKeys( slotIndex )
+		  itemIndex = arrKeys.IndexOf( key )
 		  
-		  isMatch = false
-		  return result
+		  if raiseException and itemIndex = -1 then
+		    raise new KeyNotFoundException
+		  end if
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function Lookup(key As Variant, defaultValue As Variant) As Variant
+		  dim slotIndex as integer
+		  dim itemIndex as integer
+		  Locate( key, slotIndex, itemIndex, false )
+		  
+		  if itemIndex = -1 then
+		    return defaultValue
+		  else
+		    dim values() as variant = SlotValues( slotIndex )
+		    return values( itemIndex )
+		  end if
 		  
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
-		Function Keys() As Variant()
-		  dim result() as variant
-		  redim result( mKeys.Ubound )
+	#tag Method, Flags = &h21
+		Private Sub RedimArrays(ub As Integer)
+		  dim firstIndex as integer = SlotKeys.Ubound + 1
 		  
-		  for i as integer = 0 to mKeys.Ubound
-		    result( i ) = mKeys( i )
+		  redim SlotKeys( ub )
+		  redim SlotValues( ub )
+		  
+		  for i as integer = firstIndex to ub
+		    dim arrKeys() as variant
+		    SlotKeys( i ) = arrKeys
+		    dim arrValues() as variant
+		    SlotValues( i ) = arrValues
+		  next
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub Remove(key As Variant)
+		  dim slotIndex as integer
+		  dim itemIndex as integer
+		  Locate( key, slotIndex, itemIndex )
+		  
+		  dim arr() as variant
+		  
+		  arr = SlotKeys( slotIndex )
+		  arr.Remove itemIndex
+		  
+		  arr = SlotValues( slotIndex )
+		  arr.Remove itemIndex
+		  
+		  mCount = mCount - 1
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function SlotsToValues(arr() As Variant) As Variant()
+		  dim result() as variant
+		  redim result( arr.Ubound )
+		  
+		  for i as integer = 0 to arr.Ubound
+		    dim slot as variant = arr( i )
+		    if not slot.IsNull then
+		      dim valueArr() as variant = slot
+		      for valueIndex as integer = 0 to valueArr.Ubound
+		        result( i ) = valueArr( i )
+		      next
+		    end if
 		  next
 		  
 		  return result
@@ -86,78 +139,46 @@ Protected Class BinaryDictionary_MTC
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function Lookup(key As Variant, defaultValue As Variant) As Variant
-		  dim isMatch as boolean
-		  dim index as integer = IndexOf( HashOf( key ), isMatch )
-		  if isMatch then
-		    return mValues( index )
-		  else
-		    return defaultValue
-		  end if
-		  
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub Remove(key As Variant)
-		  dim isMatch as boolean
-		  dim index as integer = IndexOf( HashOf( key ), isMatch )
-		  if not isMatch then
-		    raise new KeyNotFoundException
-		  end if
-		  
-		  KeyHashes.Remove index
-		  mKeys.Remove index
-		  mValues.Remove index
-		  mCount = mCount - 1
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Function Value(key As Variant) As Variant
-		  dim isMatch as boolean
-		  dim index as integer = IndexOf( HashOf( key ), isMatch )
-		  if not isMatch then
-		    raise new KeyNotFoundException
-		  end if
+		  dim slotIndex as integer
+		  dim itemIndex as integer
+		  Locate( key, slotIndex, itemIndex )
 		  
-		  return mValues( index )
+		  dim arr() as variant = SlotValues( slotIndex )
+		  return arr( itemIndex )
+		  
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Value(key As Variant, Assigns value As Variant)
-		  dim isMatch as boolean
-		  dim hash as UInt64 = HashOf( key )
+		  dim slotIndex as integer
+		  dim itemIndex as integer
+		  Locate( key, slotIndex, itemIndex, false )
 		  
-		  dim index as integer = IndexOf( hash, isMatch )
-		  if isMatch then
-		    mValues( index ) = value
-		  elseif index > mKeys.Ubound then
-		    KeyHashes.Append hash
-		    mKeys.Append key
-		    mValues.Append value
+		  if itemIndex = -1 then
+		    dim arrKeys() as variant = SlotKeys( slotIndex )
+		    dim arrValues() as variant = SlotValues( slotIndex )
+		    
+		    arrKeys.Append key
+		    arrValues.Append value
+		    
 		    mCount = mCount + 1
+		    
 		  else
-		    KeyHashes.Insert index, hash
-		    mKeys.Insert index, key
-		    mValues.Insert index, value
-		    mCount = mCount + 1
+		    //
+		    // Replace the item
+		    //
+		    dim arr() as variant = SlotValues( slotIndex )
+		    arr( itemIndex ) = value
+		    
 		  end if
-		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Function Values() As Variant()
-		  dim result() as variant
-		  redim result( mValues.Ubound )
-		  
-		  for i as integer = 0 to mValues.Ubound
-		    result( i ) = mValues( i )
-		  next
-		  
-		  return result
+		  return SlotsToValues( SlotValues )
 		  
 		End Function
 	#tag EndMethod
@@ -173,7 +194,7 @@ Protected Class BinaryDictionary_MTC
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h21
-		Private KeyHashes() As UInt64
+		Private FibShifter As UInt64
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -181,11 +202,15 @@ Protected Class BinaryDictionary_MTC
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private mKeys() As Variant
+		Private SlotKeys() As Variant
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private mValues() As Variant
+		Private SlotUboundExponent As Integer = 12
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private SlotValues() As Variant
 	#tag EndProperty
 
 
