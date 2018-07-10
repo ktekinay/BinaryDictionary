@@ -231,9 +231,22 @@ End
 		  dim swb as new Stopwatch_MTC
 		  dim swd as new Stopwatch_MTC
 		  
+		  swd.Start
 		  dim d as new Dictionary
+		  swd.Stop
 		  
+		  swb.Start
 		  dim b as new BinaryDictionary_MTC
+		  swb.Stop
+		  
+		  System.DebugLog "Create Dictionary took " + _
+		  format( swd.ElapsedMilliseconds, kFormat ) + _
+		  "ms, BinaryDictionary_MTC took " + _
+		  format( swb.ElapsedMilliseconds, kFormat ) + _
+		  "ms"
+		  
+		  swb.Reset
+		  swd.Reset
 		  
 		  for i as integer = 1 to thisCount
 		    dim key as variant = Keys( i )
