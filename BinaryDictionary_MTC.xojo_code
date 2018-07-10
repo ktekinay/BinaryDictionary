@@ -15,8 +15,11 @@ Protected Class BinaryDictionary_MTC
 		  redim counts( SlotKeys.Ubound )
 		  
 		  for slotIndex as integer = 0 to SlotKeys.Ubound
-		    dim arr() as variant = SlotKeys( slotIndex )
-		    counts( slotIndex ) = arr.Ubound + 1
+		    dim slot as variant = SlotKeys( slotIndex )
+		    if not slot.IsNull then
+		      dim arr() as variant = slot
+		      counts( slotIndex ) = arr.Ubound + 1
+		    end if
 		  next
 		  
 		  return counts
@@ -53,11 +56,17 @@ Protected Class BinaryDictionary_MTC
 		  dim hash as UInt64 = key.Hash
 		  slotIndex = ( hash * kFibMult ) \ FibShifter
 		  
-		  //
-		  // We have a good slot, let's check the items
-		  //
-		  dim arrKeys() as variant = SlotKeys( slotIndex )
-		  itemIndex = arrKeys.IndexOf( key )
+		  dim slot as variant = SlotKeys( slotIndex )
+		  if slot is nil then
+		    itemIndex = -1
+		    
+		  else
+		    //
+		    // We have a good slot, let's check the items
+		    //
+		    dim arrKeys() as variant = slot
+		    itemIndex = arrKeys.IndexOf( key )
+		  end if
 		  
 		  if raiseException and itemIndex = -1 then
 		    raise new KeyNotFoundException
@@ -89,12 +98,12 @@ Protected Class BinaryDictionary_MTC
 		  redim SlotKeys( ub )
 		  redim SlotValues( ub )
 		  
-		  for i as integer = firstIndex to ub
-		    dim arrKeys() as variant
-		    SlotKeys( i ) = arrKeys
-		    dim arrValues() as variant
-		    SlotValues( i ) = arrValues
-		  next
+		  'for i as integer = firstIndex to ub
+		  'dim arrKeys() as variant
+		  'SlotKeys( i ) = arrKeys
+		  'dim arrValues() as variant
+		  'SlotValues( i ) = arrValues
+		  'next
 		  
 		End Sub
 	#tag EndMethod
@@ -157,7 +166,16 @@ Protected Class BinaryDictionary_MTC
 		  Locate( key, slotIndex, itemIndex, false )
 		  
 		  if itemIndex = -1 then
-		    dim arrKeys() as variant = SlotKeys( slotIndex )
+		    dim slot as variant = SlotKeys( slotIndex )
+		    if slot is nil then
+		      dim blank1() as variant
+		      slot = blank1
+		      SlotKeys( slotIndex ) = blank1
+		      dim blank2() as variant
+		      SlotValues( slotIndex ) = blank2
+		    end if
+		    
+		    dim arrKeys() as variant = slot
 		    dim arrValues() as variant = SlotValues( slotIndex )
 		    
 		    arrKeys.Append key
