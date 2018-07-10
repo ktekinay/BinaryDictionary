@@ -26,12 +26,12 @@ Begin Window Window1
    Title           =   "Untitled"
    Visible         =   True
    Width           =   600
-   Begin PushButton btnCode
+   Begin PushButton btnRun
       AutoDeactivate  =   True
       Bold            =   False
       ButtonStyle     =   "0"
       Cancel          =   False
-      Caption         =   "Code"
+      Caption         =   "Run"
       Default         =   False
       Enabled         =   True
       Height          =   20
@@ -45,7 +45,7 @@ Begin Window Window1
       LockLeft        =   True
       LockRight       =   False
       LockTop         =   True
-      Scope           =   0
+      Scope           =   2
       TabIndex        =   0
       TabPanelIndex   =   0
       TabStop         =   True
@@ -58,141 +58,230 @@ Begin Window Window1
       Visible         =   True
       Width           =   80
    End
-   Begin TextArea fldResult
-      AcceptTabs      =   False
-      Alignment       =   0
+   Begin Listbox lbResult
       AutoDeactivate  =   True
-      AutomaticallyCheckSpelling=   True
-      BackColor       =   &cFFFFFF00
+      AutoHideScrollbars=   True
       Bold            =   False
       Border          =   True
+      ColumnCount     =   5
+      ColumnsResizable=   False
+      ColumnWidths    =   ""
       DataField       =   ""
       DataSource      =   ""
+      DefaultRowHeight=   -1
       Enabled         =   True
-      Format          =   ""
+      EnableDrag      =   False
+      EnableDragReorder=   False
+      GridLinesHorizontal=   0
+      GridLinesVertical=   0
+      HasHeading      =   True
+      HeadingIndex    =   -1
       Height          =   334
       HelpTag         =   ""
-      HideSelection   =   True
+      Hierarchical    =   False
       Index           =   -2147483648
+      InitialParent   =   ""
+      InitialValue    =   "Count	Insert Dict	Insert Binary	Value Dict	Value Binary"
       Italic          =   False
       Left            =   20
-      LimitText       =   0
-      LineHeight      =   0.0
-      LineSpacing     =   1.0
       LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
       LockRight       =   True
       LockTop         =   True
-      Mask            =   ""
-      Multiline       =   True
-      ReadOnly        =   False
+      RequiresSelection=   False
       Scope           =   0
       ScrollbarHorizontal=   False
-      ScrollbarVertical=   True
-      Styled          =   False
+      ScrollBarVertical=   True
+      SelectionType   =   0
+      ShowDropIndicator=   False
       TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
-      Text            =   ""
-      TextColor       =   &c00000000
-      TextFont        =   "System"
+      TextFont        =   "Menlo"
       TextSize        =   0.0
       TextUnit        =   0
       Top             =   46
-      Transparent     =   True
+      Transparent     =   False
       Underline       =   False
       UseFocusRing    =   True
       Visible         =   True
       Width           =   560
+      _ScrollOffset   =   0
+      _ScrollWidth    =   -1
+   End
+   Begin Timer tmrTest
+      Index           =   -2147483648
+      LockedInPosition=   False
+      Mode            =   0
+      Period          =   10
+      Scope           =   2
+      TabPanelIndex   =   0
    End
 End
 #tag EndWindow
 
 #tag WindowCode
-	#tag Method, Flags = &h0
-		Sub AddToResult(msg As Variant)
-		  fldResult.AppendText msg.StringValue
-		  fldResult.AppendText EndOfLine
-		  
-		End Sub
-	#tag EndMethod
+	#tag Property, Flags = &h21
+		Private Keys() As Variant
+	#tag EndProperty
 
-	#tag Method, Flags = &h21
-		Private Function MakeKey(i As Integer) As Variant
-		  return str( i )
-		End Function
-	#tag EndMethod
+	#tag Property, Flags = &h21
+		Private ThisCount As Integer
+	#tag EndProperty
+
+
+	#tag Constant, Name = kUbound, Type = Double, Dynamic = False, Default = \"1000000", Scope = Private
+	#tag EndConstant
 
 
 #tag EndWindowCode
 
-#tag Events btnCode
+#tag Events btnRun
 	#tag Event
 		Sub Action()
-		  #if not DebugBuild
-		    #pragma BackgroundTasks False
-		    #pragma NilObjectChecking False
-		    #pragma StackOverflowChecking False
-		    #pragma BoundsChecking False
-		  #endif
+		  if tmrTest.Mode <> Timer.ModeOff then
+		    
+		    tmrTest.Mode = Timer.ModeOff
+		    
+		  else
+		    
+		    if Keys.Ubound = -1 then
+		      for i as integer = 0 to kUbound
+		        Keys.Append str( i )
+		      next
+		      Keys.Shuffle
+		    end if
+		    
+		    lbResult.DeleteAllRows
+		    for col as integer = 0 to 4
+		      lbResult.ColumnAlignment( col ) = ListBox.AlignRight
+		    next
+		    
+		    ThisCount = 100
+		    tmrTest.Mode = Timer.ModeMultiple
+		    
+		  end if
 		  
-		  const kUbound as integer = 1000
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events lbResult
+	#tag Event
+		Function CellTextPaint(g As Graphics, row As Integer, column As Integer, x as Integer, y as Integer) As Boolean
+		  if column = 0 then
+		    return false
+		  end if
 		  
-		  dim msg as string
+		  dim isEven as boolean = ( column mod 2 ) = 0
+		  
+		  dim thisMicroSecs as double = me.CellTag( row, column ).DoubleValue
+		  dim otherMicrosecs as double = if( isEven, me.CellTag( row, column - 1 ).DoubleValue, me.CellTag( row, column + 1 ).DoubleValue )
+		  
+		  if thisMicroSecs < otherMicrosecs then
+		    g.ForeColor = Color.Green
+		    g.Bold = true
+		  end if
+		  
+		  
+		End Function
+	#tag EndEvent
+	#tag Event
+		Function CellBackgroundPaint(g As Graphics, row As Integer, column As Integer) As Boolean
+		  if me.Selected( row ) then
+		    return false
+		  end if
+		  
+		  if ( row mod 2 ) <> 0 then
+		    g.ForeColor = &cE2EDFF00
+		    g.FillRect 0, 0, g.Width, g.Height
+		    return true
+		  end if
+		End Function
+	#tag EndEvent
+#tag EndEvents
+#tag Events tmrTest
+	#tag Event
+		Sub Action()
+		  const kFormat as string = "#,0.000"
+		  
+		  lbResult.AddRow format( ThisCount, "#,0" )
+		  dim row as integer = lbResult.LastIndex
+		  
 		  dim swb as new Stopwatch_MTC
 		  dim swd as new Stopwatch_MTC
 		  
 		  dim d as new Dictionary
-		  d.BinCount = kUbound * 1000
 		  
 		  dim b as new BinaryDictionary_MTC
 		  
-		  AddToResult "INSERT"
-		  
-		  for i as integer = 0 to kUbound
-		    dim key as variant = MakeKey( i )
+		  for i as integer = 1 to ThisCount
+		    dim key as variant = Keys( i )
 		    
 		    swd.Start
 		    d.Value( key ) = nil
 		    swd.Stop
 		    
+		    if UserCancelled then
+		      me.Mode = Timer.ModeOff
+		      return
+		    end if
+		    
 		    swb.Start
 		    b.Value( key ) = nil
 		    swb.Stop
+		    
+		    if UserCancelled then
+		      me.Mode = Timer.ModeOff
+		      return
+		    end if
 		  next
 		  
-		  msg = "Dict: " + format( swd.ElapsedMicroseconds, "#," ) + " microsecs"
-		  AddToResult msg
-		  msg = "Binary: " + format( swb.ElapsedMicroseconds, "#," ) + " microsecs"
-		  AddToResult msg
-		  
-		  if b.Count <> d.Count then
-		    AddToResult "... but they don't match!"
-		  end if
+		  lbResult.Cell( row, 1 ) = format( swd.ElapsedMilliseconds, kFormat )
+		  lbResult.CellTag( row, 1 ) = swd.ElapsedMicroseconds
+		  lbResult.Cell( row, 2 ) = format( swb.ElapsedMilliseconds, kFormat )
+		  lbResult.CellTag( row, 2 ) = swb.ElapsedMicroseconds
 		  
 		  swd.Reset
 		  swb.Reset
 		  
-		  AddToResult "VALUE"
-		  for i as integer = 0 to kUbound
-		    dim key as variant = MakeKey( i )
+		  for i as integer = 1 to ThisCount
+		    dim key as variant = Keys( i )
 		    
 		    swd.Start
 		    call d.Value( key )
 		    swd.Stop
 		    
+		    if UserCancelled then
+		      me.Mode = Timer.ModeOff
+		      return
+		    end if
+		    
 		    swb.Start
 		    call b.Value( key )
 		    swb.Stop
+		    
+		    if UserCancelled then
+		      me.Mode = Timer.ModeOff
+		      return
+		    end if
 		  next
 		  
-		  msg = "Dict: " + format( swd.ElapsedMicroseconds, "#," ) + " microsecs"
-		  AddToResult msg
-		  msg = "Binary: " + format( swb.ElapsedMicroseconds, "#," ) + " microsecs"
-		  AddToResult msg
+		  lbResult.Cell( row, 3 ) = format( swd.ElapsedMilliseconds, kFormat )
+		  lbResult.CellTag( row, 3 ) = swd.ElapsedMicroseconds
+		  lbResult.Cell( row, 4 ) = format( swb.ElapsedMilliseconds, kFormat )
+		  lbResult.CellTag( row, 4 ) = swb.ElapsedMicroseconds
 		  
-		  AddToResult ""
+		  if UserCancelled or ThisCount = kUbound then
+		    me.Mode = Timer.ModeOff
+		    return
+		  end if
+		  
+		  ThisCount = ThisCount + ThisCount
+		  
+		  if ThisCount > kUbound then
+		    ThisCount = kUbound
+		  end if
 		  
 		End Sub
 	#tag EndEvent
