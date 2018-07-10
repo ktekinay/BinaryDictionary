@@ -158,7 +158,7 @@ End
 		      lbResult.ColumnAlignment( col ) = ListBox.AlignRight
 		    next
 		    
-		    ThisCount = 100
+		    ThisCount = 25
 		    tmrTest.Mode = Timer.ModeMultiple
 		    
 		  end if
