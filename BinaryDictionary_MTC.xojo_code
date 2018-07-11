@@ -93,7 +93,7 @@ Protected Class BinaryDictionary_MTC
 
 	#tag Method, Flags = &h21
 		Private Sub RedimArrays(ub As Integer)
-		  dim firstIndex as integer = SlotKeys.Ubound + 1
+		  'dim firstIndex as integer = SlotKeys.Ubound + 1
 		  
 		  redim SlotKeys( ub )
 		  redim SlotValues( ub )
