@@ -269,7 +269,7 @@ Implements Xojo.Core.Iterable
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private SlotUboundExponent As Integer = 12
+		Private SlotUboundExponent As Integer = 13
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
