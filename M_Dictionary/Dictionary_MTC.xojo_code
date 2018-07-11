@@ -99,6 +99,13 @@ Implements Xojo.Core.Iterable
 
 	#tag Method, Flags = &h0
 		Function Lookup(key As Variant, defaultValue As Variant) As Variant
+		  #if not DebugBuild then
+		    #pragma BackgroundTasks false
+		    #pragma BoundsChecking false
+		    #pragma NilObjectChecking false
+		    #pragma StackOverflowChecking false
+		  #endif
+		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
 		  Locate( key, slotIndex, itemIndex, false )
@@ -160,6 +167,13 @@ Implements Xojo.Core.Iterable
 
 	#tag Method, Flags = &h0
 		Function Value(key As Variant) As Variant
+		  #if not DebugBuild then
+		    #pragma BackgroundTasks false
+		    #pragma BoundsChecking false
+		    #pragma NilObjectChecking false
+		    #pragma StackOverflowChecking false
+		  #endif
+		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
 		  Locate( key, slotIndex, itemIndex )
@@ -172,6 +186,13 @@ Implements Xojo.Core.Iterable
 
 	#tag Method, Flags = &h0
 		Sub Value(key As Variant, Assigns value As Variant)
+		  #if not DebugBuild then
+		    #pragma BackgroundTasks false
+		    #pragma BoundsChecking false
+		    #pragma NilObjectChecking false
+		    #pragma StackOverflowChecking false
+		  #endif
+		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
 		  Locate( key, slotIndex, itemIndex, false )
