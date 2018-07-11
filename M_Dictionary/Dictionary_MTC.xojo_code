@@ -219,8 +219,8 @@ Implements Xojo.Core.Iterable
 		    //
 		    // Replace the item
 		    //
-		    dim arr() as variant = SlotValues( slotIndex )
-		    arr( itemIndex ) = value
+		    dim arrValues() as variant = SlotValues( slotIndex )
+		    arrValues( itemIndex ) = value
 		    
 		  end if
 		End Sub
