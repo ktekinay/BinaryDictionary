@@ -5,13 +5,8 @@ Implements Xojo.Core.Iterable
 		Sub Clear()
 		  dim ub as integer = SlotKeys.Ubound
 		  
-		  redim SlotKeys( -1 )
-		  redim SlotValues( -1 )
-		  redim SlotsWithArrays( -1 )
-		  mCount = 0
-		  
+		  RedimArrays( -1 )
 		  RedimArrays( ub )
-		  
 		End Sub
 	#tag EndMethod
 
@@ -122,6 +117,20 @@ Implements Xojo.Core.Iterable
 
 	#tag Method, Flags = &h21
 		Private Sub RedimArrays(ub As Integer)
+		  if ub = -1 then
+		    //
+		    // Clearing the arrays
+		    //
+		    mCount = 0
+		    redim SlotsWithArrays( -1 )
+		    
+		  elseif ub <= SlotKeys.Ubound then
+		    //
+		    // Can't reduce size so do nothing
+		    //
+		    return
+		  end if
+		  
 		  redim SlotKeys( ub )
 		  redim SlotValues( ub )
 		  
