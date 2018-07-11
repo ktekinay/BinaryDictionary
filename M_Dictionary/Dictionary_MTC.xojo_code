@@ -139,13 +139,17 @@ Implements Xojo.Core.Iterable
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function SlotsToValues(arr() As Variant) As Variant()
+		Private Function SlotsToValues(slotArr() As Variant) As Variant()
 		  dim result() as variant
+		  redim result( mCount - 1 )
+		  dim resultIndex as integer = -1
 		  
-		  for each slotIndex as integer in SlotsWithArrays
-		    dim valueArr() as variant = arr( slotIndex )
-		    for valueIndex as integer = 0 to valueArr.Ubound
-		      result.Append valueArr( valueIndex )
+		  for i as integer = 0 to SlotsWithArrays.Ubound
+		    dim slotIndex as integer = SlotsWithArrays( i )
+		    dim itemArr() as variant = slotArr( slotIndex )
+		    for itemIndex as integer = 0 to itemArr.Ubound
+		      resultIndex = resultIndex + 1
+		      result( resultIndex ) = itemArr( itemIndex )
 		    next
 		  next
 		  
@@ -174,26 +178,19 @@ Implements Xojo.Core.Iterable
 		  
 		  if itemIndex = -1 then
 		    dim slot as variant = SlotKeys( slotIndex )
-		    dim arrKeys() as variant = nil
-		    dim arrValues() as variant = nil
 		    
 		    if slot is nil then
-		      dim blank1() as variant
-		      SlotKeys( slotIndex ) = blank1
-		      arrKeys = blank1
-		      
-		      dim blank2() as variant
-		      SlotValues( slotIndex ) = blank2
-		      arrValues = blank2
+		      SlotKeys( slotIndex ) = array( key )
+		      SlotValues( slotIndex ) = array( value )
 		      
 		      SlotsWithArrays.Append slotIndex
 		    else
-		      arrKeys = slot
-		      arrValues = SlotValues( slotIndex )
+		      dim arrKeys() as variant = slot
+		      arrKeys.Append key
+		      
+		      dim arrValues() as variant = SlotValues( slotIndex )
+		      arrValues.Append value
 		    end if
-		    
-		    arrKeys.Append key
-		    arrValues.Append value
 		    
 		    mCount = mCount + 1
 		    
