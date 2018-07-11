@@ -1,5 +1,5 @@
 #tag Class
-Protected Class BinaryDictionary_MTC
+Protected Class Dictionary_MTC
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  FibShifter = 2 ^ ( 64 - SlotUboundExponent )

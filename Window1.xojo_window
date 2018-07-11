@@ -241,12 +241,12 @@ End
 		  swd.Stop
 		  
 		  swb.Start
-		  dim b as new BinaryDictionary_MTC
+		  dim b as new Dictionary_MTC
 		  swb.Stop
 		  
 		  System.DebugLog "Create Dictionary took " + _
 		  format( swd.ElapsedMilliseconds, kFormat ) + _
-		  "ms, BinaryDictionary_MTC took " + _
+		  "ms, Dictionary_MTC took " + _
 		  format( swb.ElapsedMilliseconds, kFormat ) + _
 		  "ms"
 		  
