@@ -1,5 +1,5 @@
 #tag Window
-Begin Window Window1
+Begin Window WndCompare
    BackColor       =   &cFFFFFF00
    Backdrop        =   0
    CloseButton     =   True
@@ -169,6 +169,9 @@ End
 #tag Events lbResult
 	#tag Event
 		Function CellTextPaint(g As Graphics, row As Integer, column As Integer, x as Integer, y as Integer) As Boolean
+		  #pragma unused x
+		  #pragma unused y
+		  
 		  if column = 0 then
 		    return false
 		  end if
@@ -188,6 +191,8 @@ End
 	#tag EndEvent
 	#tag Event
 		Function CellBackgroundPaint(g As Graphics, row As Integer, column As Integer) As Boolean
+		  #pragma unused column
+		  
 		  if me.Selected( row ) then
 		    return false
 		  end if
