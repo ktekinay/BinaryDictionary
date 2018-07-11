@@ -115,17 +115,8 @@ Implements Xojo.Core.Iterable
 
 	#tag Method, Flags = &h21
 		Private Sub RedimArrays(ub As Integer)
-		  'dim firstIndex as integer = SlotKeys.Ubound + 1
-		  
 		  redim SlotKeys( ub )
 		  redim SlotValues( ub )
-		  
-		  'for i as integer = firstIndex to ub
-		  'dim arrKeys() as variant
-		  'SlotKeys( i ) = arrKeys
-		  'dim arrValues() as variant
-		  'SlotValues( i ) = arrValues
-		  'next
 		  
 		End Sub
 	#tag EndMethod
