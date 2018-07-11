@@ -1,5 +1,6 @@
 #tag Class
-Protected Class Dictionary_MTC
+Class Dictionary_MTC
+Implements Xojo.Core.Iterable
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  FibShifter = 2 ^ ( 64 - SlotUboundExponent )
@@ -23,6 +24,13 @@ Protected Class Dictionary_MTC
 		  next
 		  
 		  return counts
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function GetIterator() As Xojo.Core.Iterator
+		  dim r as new M_Dictionary.Entry( Keys, Values )
+		  return Xojo.Core.Iterator( r )
 		End Function
 	#tag EndMethod
 
@@ -130,14 +138,13 @@ Protected Class Dictionary_MTC
 	#tag Method, Flags = &h21
 		Private Function SlotsToValues(arr() As Variant) As Variant()
 		  dim result() as variant
-		  redim result( arr.Ubound )
 		  
 		  for i as integer = 0 to arr.Ubound
 		    dim slot as variant = arr( i )
 		    if not slot.IsNull then
 		      dim valueArr() as variant = slot
 		      for valueIndex as integer = 0 to valueArr.Ubound
-		        result( i ) = valueArr( i )
+		        result.Append valueArr( valueIndex )
 		      next
 		    end if
 		  next
