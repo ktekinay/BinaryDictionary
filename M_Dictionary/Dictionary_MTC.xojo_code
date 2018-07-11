@@ -29,7 +29,7 @@ Implements Xojo.Core.Iterable
 
 	#tag Method, Flags = &h21
 		Private Function GetIterator() As Xojo.Core.Iterator
-		  dim r as new M_Dictionary.Entry( Keys, Values )
+		  dim r as new M_Dictionary.Entry( self )
 		  return Xojo.Core.Iterator( r )
 		End Function
 	#tag EndMethod

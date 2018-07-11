@@ -2,9 +2,9 @@
 Protected Class Entry
 Implements Xojo.Core.Iterator
 	#tag Method, Flags = &h0
-		Sub Constructor(keys() As Variant, values() As Variant)
-		  self.Keys = keys
-		  self.Values = values
+		Sub Constructor(host As Dictionary_MTC)
+		  self.Keys = host.Keys
+		  self.Values = host.Values
 		  
 		End Sub
 	#tag EndMethod
