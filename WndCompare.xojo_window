@@ -25,7 +25,7 @@ Begin Window WndCompare
    Resizeable      =   True
    Title           =   "Untitled"
    Visible         =   True
-   Width           =   1088
+   Width           =   1228
    Begin PushButton btnRun
       AutoDeactivate  =   True
       Bold            =   False
@@ -63,7 +63,7 @@ Begin Window WndCompare
       AutoHideScrollbars=   True
       Bold            =   False
       Border          =   True
-      ColumnCount     =   5
+      ColumnCount     =   7
       ColumnsResizable=   False
       ColumnWidths    =   "80"
       DataField       =   ""
@@ -81,7 +81,7 @@ Begin Window WndCompare
       Hierarchical    =   False
       Index           =   -2147483648
       InitialParent   =   ""
-      InitialValue    =   "Count	Insert Dict	Insert Binary	Value Dict	Value Binary"
+      InitialValue    =   "Count	Insert Dict	Insert MTC	Value Dict	Value MTC	Change Dict	Change MTC"
       Italic          =   False
       Left            =   20
       LockBottom      =   True
@@ -90,7 +90,7 @@ Begin Window WndCompare
       LockRight       =   True
       LockTop         =   True
       RequiresSelection=   False
-      Scope           =   0
+      Scope           =   2
       ScrollbarHorizontal=   False
       ScrollBarVertical=   True
       SelectionType   =   0
@@ -106,7 +106,7 @@ Begin Window WndCompare
       Underline       =   False
       UseFocusRing    =   True
       Visible         =   True
-      Width           =   1048
+      Width           =   1188
       _ScrollOffset   =   0
       _ScrollWidth    =   -1
    End
@@ -154,7 +154,7 @@ End
 		    end if
 		    
 		    lbResult.DeleteAllRows
-		    for col as integer = 0 to 4
+		    for col as integer = 0 to lbResult.ColumnCount - 1
 		      lbResult.ColumnAlignment( col ) = ListBox.AlignRight
 		    next
 		    
@@ -318,6 +318,38 @@ End
 		  lbResult.Cell( row, 4 ) = format( swb.ElapsedMilliseconds, kFormat ) + _
 		  " (" + format( swb.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
 		  lbResult.CellTag( row, 4 ) = swb.ElapsedMicroseconds
+		  
+		  swd.Reset
+		  swb.Reset
+		  
+		  for i as integer = 1 to ThisCount
+		    dim key as variant = Keys( i )
+		    
+		    swd.Start
+		    d.Value( key ) = nil
+		    swd.Stop
+		    
+		    if UserCancelled then
+		      me.Mode = Timer.ModeOff
+		      return
+		    end if
+		    
+		    swb.Start
+		    b.Value( key ) = nil
+		    swb.Stop
+		    
+		    if UserCancelled then
+		      me.Mode = Timer.ModeOff
+		      return
+		    end if
+		  next
+		  
+		  lbResult.Cell( row, 5 ) = format( swd.ElapsedMilliseconds, kFormat ) + _
+		  " (" + format( swd.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
+		  lbResult.CellTag( row, 5 ) = swd.ElapsedMicroseconds
+		  lbResult.Cell( row, 6 ) = format( swb.ElapsedMilliseconds, kFormat ) + _
+		  " (" + format( swb.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
+		  lbResult.CellTag( row, 6 ) = swb.ElapsedMicroseconds
 		  
 		  dim counts() as integer = b.GetDistribution
 		  dim minCount as integer = 2 ^ 31
