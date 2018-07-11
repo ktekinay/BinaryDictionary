@@ -2,6 +2,20 @@
 Class Dictionary_MTC
 Implements Xojo.Core.Iterable
 	#tag Method, Flags = &h0
+		Sub Clear()
+		  dim ub as integer = SlotKeys.Ubound
+		  
+		  redim SlotKeys( -1 )
+		  redim SlotValues( -1 )
+		  redim SlotsWithArrays( -1 )
+		  mCount = 0
+		  
+		  RedimArrays( ub )
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub Constructor()
 		  FibShifter = 2 ^ ( 64 - SlotUboundExponent )
 		  dim ub as integer = ( 2 ^ SlotUboundExponent ) - 1
