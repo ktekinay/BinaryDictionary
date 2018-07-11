@@ -25,7 +25,7 @@ Begin Window Window1
    Resizeable      =   True
    Title           =   "Untitled"
    Visible         =   True
-   Width           =   600
+   Width           =   1088
    Begin PushButton btnRun
       AutoDeactivate  =   True
       Bold            =   False
@@ -65,7 +65,7 @@ Begin Window Window1
       Border          =   True
       ColumnCount     =   5
       ColumnsResizable=   False
-      ColumnWidths    =   ""
+      ColumnWidths    =   "80"
       DataField       =   ""
       DataSource      =   ""
       DefaultRowHeight=   -1
@@ -106,7 +106,7 @@ Begin Window Window1
       Underline       =   False
       UseFocusRing    =   True
       Visible         =   True
-      Width           =   560
+      Width           =   1048
       _ScrollOffset   =   0
       _ScrollWidth    =   -1
    End
@@ -222,11 +222,16 @@ End
 		Sub Action()
 		  const kFormat as string = "#,0.000"
 		  
-		  dim thisCount as integer = self.ThisCount
+		  #if DebugBuild then
+		    dim thisCountDebug as integer = self.ThisCount
+		    #pragma unused thisCountDebug
+		  #endif
+		  
+		  dim thisCountDouble as double = ThisCount
 		  
 		  lbResult.AddRow format( ThisCount, "#,0" )
 		  dim row as integer = lbResult.LastIndex
-		  lbResult.CellTag( row, 0 ) = thisCount
+		  lbResult.CellTag( row, 0 ) = ThisCount
 		  
 		  dim swb as new Stopwatch_MTC
 		  dim swd as new Stopwatch_MTC
@@ -248,7 +253,7 @@ End
 		  swb.Reset
 		  swd.Reset
 		  
-		  for i as integer = 1 to thisCount
+		  for i as integer = 1 to ThisCount
 		    dim key as variant = Keys( i )
 		    
 		    swd.Start
@@ -270,15 +275,17 @@ End
 		    end if
 		  next
 		  
-		  lbResult.Cell( row, 1 ) = format( swd.ElapsedMilliseconds, kFormat )
+		  lbResult.Cell( row, 1 ) = format( swd.ElapsedMilliseconds, kFormat ) + _
+		  " (" + format( swd.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
 		  lbResult.CellTag( row, 1 ) = swd.ElapsedMicroseconds
-		  lbResult.Cell( row, 2 ) = format( swb.ElapsedMilliseconds, kFormat )
+		  lbResult.Cell( row, 2 ) = format( swb.ElapsedMilliseconds, kFormat ) + _
+		  " (" + format( swb.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
 		  lbResult.CellTag( row, 2 ) = swb.ElapsedMicroseconds
 		  
 		  swd.Reset
 		  swb.Reset
 		  
-		  for i as integer = 1 to thisCount
+		  for i as integer = 1 to ThisCount
 		    dim key as variant = Keys( i )
 		    
 		    swd.Start
@@ -300,13 +307,15 @@ End
 		    end if
 		  next
 		  
-		  lbResult.Cell( row, 3 ) = format( swd.ElapsedMilliseconds, kFormat )
+		  lbResult.Cell( row, 3 ) = format( swd.ElapsedMilliseconds, kFormat ) + _
+		  " (" + format( swd.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
 		  lbResult.CellTag( row, 3 ) = swd.ElapsedMicroseconds
-		  lbResult.Cell( row, 4 ) = format( swb.ElapsedMilliseconds, kFormat )
+		  lbResult.Cell( row, 4 ) = format( swb.ElapsedMilliseconds, kFormat ) + _
+		  " (" + format( swb.ElapsedMicroseconds / thisCountDouble, kFormat ) + ")"
 		  lbResult.CellTag( row, 4 ) = swb.ElapsedMicroseconds
 		  
 		  dim counts() as integer = b.GetDistribution
-		  dim minCount as integer = 2^32
+		  dim minCount as integer = 2 ^ 31
 		  dim maxCount as integer
 		  dim isZeroCount as integer
 		  dim hasValueCount as integer
@@ -332,7 +341,7 @@ End
 		    return
 		  end if
 		  
-		  self.ThisCount = thisCount + thisCount
+		  self.ThisCount = ThisCount + ThisCount
 		  
 		  if self.ThisCount > kUbound then
 		    self.ThisCount = kUbound
