@@ -122,13 +122,11 @@ Implements Xojo.Core.Iterable
 		  dim itemIndex as integer
 		  Locate( key, slotIndex, itemIndex )
 		  
-		  dim arr() as variant
+		  dim arrKeys() as variant = SlotKeys( slotIndex )
+		  arrKeys.Remove itemIndex
 		  
-		  arr = SlotKeys( slotIndex )
-		  arr.Remove itemIndex
-		  
-		  arr = SlotValues( slotIndex )
-		  arr.Remove itemIndex
+		  dim arrValues() as variant = SlotValues( slotIndex )
+		  arrValues.Remove itemIndex
 		  
 		  mCount = mCount - 1
 		  
@@ -139,14 +137,11 @@ Implements Xojo.Core.Iterable
 		Private Function SlotsToValues(arr() As Variant) As Variant()
 		  dim result() as variant
 		  
-		  for i as integer = 0 to arr.Ubound
-		    dim slot as variant = arr( i )
-		    if not slot.IsNull then
-		      dim valueArr() as variant = slot
-		      for valueIndex as integer = 0 to valueArr.Ubound
-		        result.Append valueArr( valueIndex )
-		      next
-		    end if
+		  for each slotIndex as integer in SlotsWithArrays
+		    dim valueArr() as variant = arr( slotIndex )
+		    for valueIndex as integer = 0 to valueArr.Ubound
+		      result.Append valueArr( valueIndex )
+		    next
 		  next
 		  
 		  return result
@@ -174,16 +169,23 @@ Implements Xojo.Core.Iterable
 		  
 		  if itemIndex = -1 then
 		    dim slot as variant = SlotKeys( slotIndex )
+		    dim arrKeys() as variant = nil
+		    dim arrValues() as variant = nil
+		    
 		    if slot is nil then
 		      dim blank1() as variant
-		      slot = blank1
 		      SlotKeys( slotIndex ) = blank1
+		      arrKeys = blank1
+		      
 		      dim blank2() as variant
 		      SlotValues( slotIndex ) = blank2
+		      arrValues = blank2
+		      
+		      SlotsWithArrays.Append slotIndex
+		    else
+		      arrKeys = slot
+		      arrValues = SlotValues( slotIndex )
 		    end if
-		    
-		    dim arrKeys() as variant = slot
-		    dim arrValues() as variant = SlotValues( slotIndex )
 		    
 		    arrKeys.Append key
 		    arrValues.Append value
@@ -228,6 +230,10 @@ Implements Xojo.Core.Iterable
 
 	#tag Property, Flags = &h21
 		Private SlotKeys() As Variant
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private SlotsWithArrays() As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

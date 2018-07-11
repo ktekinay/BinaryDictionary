@@ -4,6 +4,7 @@ Inherits Application
 	#tag Event
 		Sub Open()
 		  AutoQuit = true
+		  
 		End Sub
 	#tag EndEvent
 
