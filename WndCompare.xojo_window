@@ -154,9 +154,6 @@ End
 		    end if
 		    
 		    lbResult.DeleteAllRows
-		    for col as integer = 0 to lbResult.ColumnCount - 1
-		      lbResult.ColumnAlignment( col ) = ListBox.AlignRight
-		    next
 		    
 		    ThisCount = 25
 		    tmrTest.Mode = Timer.ModeMultiple
@@ -220,6 +217,14 @@ End
 		  return true
 		  
 		End Function
+	#tag EndEvent
+	#tag Event
+		Sub Open()
+		  for col as integer = 0 to me.ColumnCount - 1
+		    me.ColumnAlignment( col ) = ListBox.AlignRight
+		  next
+		  
+		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events tmrTest
