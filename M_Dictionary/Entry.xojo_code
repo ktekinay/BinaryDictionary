@@ -12,7 +12,16 @@ Implements Xojo.Core.Iterator
 	#tag Method, Flags = &h21
 		Private Function MoveNext() As Boolean
 		  ItemIndex = ItemIndex + 1
-		  return ItemIndex <= Keys.Ubound
+		  
+		  if ItemIndex = -1 or ItemIndex > Keys.Ubound then
+		    mCurrentKey = nil
+		    mCurrentValue = nil
+		    return false
+		  else
+		    mCurrentKey = Keys( ItemIndex )
+		    mCurrentValue = Values( ItemIndex )
+		    return true
+		  end if
 		  
 		End Function
 	#tag EndMethod
@@ -32,12 +41,7 @@ Implements Xojo.Core.Iterator
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  if ItemIndex = -1 or ItemIndex > Keys.Ubound then
-			    return nil
-			  else
-			    return Keys( ItemIndex )
-			  end if
-			  
+			  return mCurrentKey
 			End Get
 		#tag EndGetter
 		Key As Variant
@@ -47,15 +51,18 @@ Implements Xojo.Core.Iterator
 		Private Keys() As Variant
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private mCurrentKey As Variant
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mCurrentValue As Variant
+	#tag EndProperty
+
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  if ItemIndex = -1 or ItemIndex > Values.Ubound then
-			    return nil
-			  else
-			    return Values( ItemIndex )
-			  end if
-			  
+			  return mCurrentValue
 			End Get
 		#tag EndGetter
 		Value As Variant
