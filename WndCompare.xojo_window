@@ -23,7 +23,7 @@ Begin Window WndCompare
    MinWidth        =   64
    Placement       =   0
    Resizeable      =   True
-   Title           =   "Untitled"
+   Title           =   "Compare"
    Visible         =   True
    Width           =   1228
    Begin PushButton btnRun
