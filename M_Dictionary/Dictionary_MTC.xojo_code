@@ -1,6 +1,6 @@
 #tag Class
 Class Dictionary_MTC
-Implements Xojo.Core.Iterable
+Implements Xojo.Core.Iterable, DictionaryInterface
 	#tag Method, Flags = &h0
 		Sub Clear()
 		  dim ub as integer = SlotKeys.Ubound
