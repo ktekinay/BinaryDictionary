@@ -5,6 +5,8 @@ Inherits Application
 		Sub Open()
 		  AutoQuit = true
 		  
+		  WndCompare.Show
+		  XojoUnitTestWindow.Show
 		End Sub
 	#tag EndEvent
 
