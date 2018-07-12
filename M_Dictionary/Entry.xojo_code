@@ -107,11 +107,6 @@ Implements Xojo.Core.Iterator
 			InitialValue="0"
 			Type="Integer"
 		#tag EndViewProperty
-		#tag ViewProperty
-			Name="ParentDictionary"
-			Group="Behavior"
-			Type="Integer"
-		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
 #tag EndClass
