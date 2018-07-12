@@ -47,7 +47,7 @@ Implements Xojo.Core.Iterable
 		Function HasKey(key As Variant) As Boolean
 		  dim slotIndex as integer
 		  dim itemIndex as integer
-		  Locate( key, slotIndex, itemIndex, false )
+		  call Locate( key, slotIndex, itemIndex, false )
 		  
 		  return itemIndex <> -1
 		End Function
@@ -60,7 +60,7 @@ Implements Xojo.Core.Iterable
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub Locate(key As Variant, ByRef slotIndex As Integer, ByRef itemIndex As Integer, raiseException As Boolean = True)
+		Private Function Locate(key As Variant, ByRef slotIndex As Integer, ByRef itemIndex As Integer, raiseException As Boolean = True) As Integer
 		  #if not DebugBuild then
 		    #pragma BackgroundTasks false
 		    #pragma BoundsChecking false
@@ -70,7 +70,8 @@ Implements Xojo.Core.Iterable
 		  
 		  const kFibMult as UInt64 = 11400714819323198485
 		  
-		  dim hash as UInt64 = key.Hash
+		  dim keyHash as integer = key.Hash
+		  dim hash as UInt64 = keyHash
 		  slotIndex = ( hash * kFibMult ) \ FibShifter
 		  
 		  dim slot as variant = SlotKeys( slotIndex )
@@ -81,15 +82,31 @@ Implements Xojo.Core.Iterable
 		    //
 		    // We have a good slot, let's check the items
 		    //
+		    itemIndex = -1
 		    dim arrKeys() as variant = slot
-		    itemIndex = arrKeys.IndexOf( key )
+		    dim arrHashes() as integer = SlotKeyHashes( slotIndex )
+		    dim keyType as integer = key.Type
+		    
+		    for i as integer = 0 to arrKeys.Ubound
+		      dim testHash as integer = arrHashes( i )
+		      if testHash <> keyHash then
+		        continue for i
+		      end if
+		      
+		      dim testKey as variant = arrKeys( i )
+		      if testKey.Type = keyType then
+		        itemIndex = i
+		        exit for i
+		      end if
+		    next
 		  end if
 		  
 		  if raiseException and itemIndex = -1 then
 		    raise new KeyNotFoundException
 		  end if
 		  
-		End Sub
+		  return keyHash
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -103,7 +120,7 @@ Implements Xojo.Core.Iterable
 		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
-		  Locate( key, slotIndex, itemIndex, false )
+		  call Locate( key, slotIndex, itemIndex, false )
 		  
 		  if itemIndex = -1 then
 		    return defaultValue
@@ -133,7 +150,7 @@ Implements Xojo.Core.Iterable
 		  
 		  redim SlotKeys( ub )
 		  redim SlotValues( ub )
-		  
+		  redim SlotKeyHashes( ub )
 		End Sub
 	#tag EndMethod
 
@@ -141,7 +158,7 @@ Implements Xojo.Core.Iterable
 		Sub Remove(key As Variant)
 		  dim slotIndex as integer
 		  dim itemIndex as integer
-		  Locate( key, slotIndex, itemIndex )
+		  call Locate( key, slotIndex, itemIndex )
 		  
 		  dim arrKeys() as variant = SlotKeys( slotIndex )
 		  arrKeys.Remove itemIndex
@@ -185,7 +202,7 @@ Implements Xojo.Core.Iterable
 		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
-		  Locate( key, slotIndex, itemIndex )
+		  call Locate( key, slotIndex, itemIndex )
 		  
 		  dim arr() as variant = SlotValues( slotIndex )
 		  return arr( itemIndex )
@@ -204,19 +221,23 @@ Implements Xojo.Core.Iterable
 		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
-		  Locate( key, slotIndex, itemIndex, false )
+		  dim keyHash as integer = Locate( key, slotIndex, itemIndex, false )
 		  
 		  if itemIndex = -1 then
 		    dim slot as variant = SlotKeys( slotIndex )
 		    
 		    if slot is nil then
 		      SlotKeys( slotIndex ) = array( key )
+		      SlotKeyHashes( slotIndex ) = array( keyHash )
 		      SlotValues( slotIndex ) = array( value )
 		      
 		      SlotsWithArrays.Append slotIndex
 		    else
 		      dim arrKeys() as variant = slot
 		      arrKeys.Append key
+		      
+		      dim arrHashes() as integer = SlotKeyHashes( slotIndex )
+		      arrHashes.Append keyHash
 		      
 		      dim arrValues() as variant = SlotValues( slotIndex )
 		      arrValues.Append value
@@ -258,6 +279,10 @@ Implements Xojo.Core.Iterable
 
 	#tag Property, Flags = &h21
 		Private mCount As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private SlotKeyHashes() As Variant
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
