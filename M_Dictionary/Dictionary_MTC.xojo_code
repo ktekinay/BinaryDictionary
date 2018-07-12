@@ -60,7 +60,7 @@ Implements Xojo.Core.Iterable
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function Locate(key As Variant, ByRef slotIndex As Integer, ByRef itemIndex As Integer, raiseException As Boolean = True) As Integer
+		Private Function Locate(key As Variant, ByRef slotIndex As Integer, ByRef itemIndex As Integer, raiseException As Boolean = True) As Uint64
 		  #if not DebugBuild then
 		    #pragma BackgroundTasks false
 		    #pragma BoundsChecking false
@@ -68,13 +68,35 @@ Implements Xojo.Core.Iterable
 		    #pragma StackOverflowChecking false
 		  #endif
 		  
+		  const kTypeBits as UInt64 = 8
+		  
+		  const kTypeShifterExponent as UInt64 = 64 - kTypeBits
+		  const kTypeShifter as UInt64 = 2 ^ kTypeShifterExponent
+		  const kHashMask as UInt64 = kTypeShifter - 1
+		  const kArrayTypeMask as UInt64 = ( 2 ^ ( kTypeBits - 1 ) ) - 1
+		  const kArrayMask as UInt64 = kArrayTypeMask + 1
+		  
 		  const kFibMult as UInt64 = 11400714819323198485
 		  
-		  dim keyHash as integer = key.Hash
-		  dim hash as UInt64 = keyHash
+		  dim type as UInt64 = key.Type
+		  
+		  //
+		  // See if it's an array
+		  //
+		  if type >= CType( 4096, UInt64 ) then
+		    type = kArrayMask or ( type and kArrayTypeMask )
+		  end if
+		  
+		  dim hash as UInt64 = key.Hash
+		  
+		  //
+		  // Change the first bits of the hash to the type
+		  //
+		  hash = ( hash and kHashMask ) or ( type * kTypeShifter )
+		  
 		  slotIndex = ( hash * kFibMult ) \ FibShifter
 		  
-		  dim slot as variant = SlotKeys( slotIndex )
+		  dim slot as variant = SlotKeyHashes( slotIndex )
 		  if slot is nil then
 		    itemIndex = -1
 		    
@@ -82,30 +104,15 @@ Implements Xojo.Core.Iterable
 		    //
 		    // We have a good slot, let's check the items
 		    //
-		    itemIndex = -1
-		    dim arrKeys() as variant = slot
-		    dim arrHashes() as integer = SlotKeyHashes( slotIndex )
-		    dim keyType as integer = key.Type
-		    
-		    for i as integer = 0 to arrKeys.Ubound
-		      dim testHash as integer = arrHashes( i )
-		      if testHash <> keyHash then
-		        continue for i
-		      end if
-		      
-		      dim testKey as variant = arrKeys( i )
-		      if testKey.Type = keyType then
-		        itemIndex = i
-		        exit for i
-		      end if
-		    next
+		    dim arrHashes() as integer = slot
+		    itemIndex = arrHashes.IndexOf( hash )
 		  end if
 		  
 		  if raiseException and itemIndex = -1 then
 		    raise new KeyNotFoundException
 		  end if
 		  
-		  return keyHash
+		  return hash
 		End Function
 	#tag EndMethod
 
@@ -221,7 +228,7 @@ Implements Xojo.Core.Iterable
 		  
 		  dim slotIndex as integer
 		  dim itemIndex as integer
-		  dim keyHash as integer = Locate( key, slotIndex, itemIndex, false )
+		  dim keyHash as UInt64 = Locate( key, slotIndex, itemIndex, false )
 		  
 		  if itemIndex = -1 then
 		    dim slot as variant = SlotKeys( slotIndex )
@@ -236,7 +243,7 @@ Implements Xojo.Core.Iterable
 		      dim arrKeys() as variant = slot
 		      arrKeys.Append key
 		      
-		      dim arrHashes() as integer = SlotKeyHashes( slotIndex )
+		      dim arrHashes() as UInt64 = SlotKeyHashes( slotIndex )
 		      arrHashes.Append keyHash
 		      
 		      dim arrValues() as variant = SlotValues( slotIndex )
