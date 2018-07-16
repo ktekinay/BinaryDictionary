@@ -68,6 +68,10 @@ Inherits TestGroup
 		  d.Value( false ) = 8
 		  d.Value( true ) = 9
 		  d.Value( 0.0 ) = 10
+		  dim d1 as new Dictionary
+		  d.Value( d1 ) = 11
+		  dim dt as new Date
+		  d.Value( dt ) = 12
 		  
 		  Assert.AreEqual 1, d.Value( 1 ).IntegerValue
 		  Assert.AreEqual 2, d.Value( "1" ).IntegerValue
@@ -79,6 +83,8 @@ Inherits TestGroup
 		  Assert.AreEqual 8, d.Value( false ).IntegerValue
 		  Assert.AreEqual 9, d.Value( true ).IntegerValue
 		  Assert.AreEqual 10, d.Value( 0.0 ).IntegerValue
+		  Assert.AreEqual 11, d.Value( d1 ).IntegerValue
+		  Assert.AreEqual 12, d.Value( dt ).IntegerValue
 		  
 		End Sub
 	#tag EndMethod
